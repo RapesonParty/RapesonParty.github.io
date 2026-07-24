@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Code Consortium</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffee;
+      --bg2: #d6daf0;
+      --bg3: #eef2ff;
+      --border: #b7c5d9;
+      --post-bg: #f0e0d6;
+      --post-border: #d9bfb7;
+      --op-bg: #d6daf0;
+      --reply-bg: #eef2ff;
+      --accent: #800000;
+      --accent2: #2f4f8a;
+      --text: #1a1a1a;
+      --muted: #666;
+      --link: #800000;
+      --green: #789922;
+      --trip: #228b22;
+      --header-bg: #af0a0f;
+      --tag: #2f4f8a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 13px;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    #site-header {
+      background: var(--header-bg);
+      color: white;
+      text-align: center;
+      padding: 10px 0 6px;
+      border-bottom: 3px solid #6b0000;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    #site-header h1 {
+      font-family: 'Courier Prime', monospace;
+      font-size: 28px;
+      letter-spacing: 4px;
+      text-shadow: 1px 1px 0 #4a0000;
+    }
+    #site-header .tagline {
+      font-size: 11px;
+      opacity: 0.8;
+      letter-spacing: 2px;
+      margin-top: 2px;
+    }
+    #board-nav {
+      margin-top: 6px;
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      flex-wrap: wrap;
+      padding: 0 10px;
+    }
+    .board-tab {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 3px 12px;
+      cursor: pointer;
+      font-family: 'Courier Prime', monospace;
+      font-size: 13px;
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+    .board-tab:hover { background: rgba(255,255,255,0.3); }
+    .board-tab.active { background: white; color: var(--header-bg); font-weight: bold; }
+
+    /* MAIN */
+    #main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px 12px;
+    }
+
+    /* BOARD HEADER */
+    .board-header {
+      text-align: center;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+    }
+    .board-header h2 {
+      font-family: 'Courier Prime', monospace;
+      font-size: 22px;
+      color: var(--accent2);
+    }
+    .board-header p { color: var(--muted); font-size: 11px; margin-top: 3px; }
+
+    /* NEW THREAD FORM */
+    .post-form-wrap {
+      background: var(--op-bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+    .post-form-wrap h3 {
+      font-family: 'Courier Prime', monospace;
+      color: var(--accent2);
+      font-size: 14px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+    .form-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 7px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .form-row label {
+      width: 80px;
+      color: var(--muted);
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .form-row input[type=text], .form-row textarea {
+      flex: 1;
+      min-width: 0;
+      padding: 5px 7px;
+      border: 1px solid var(--border);
+      background: white;
+      font-family: inherit;
+      font-size: 13px;
+      border-radius: 2px;
+      color: var(--text);
+    }
+    .form-row textarea {
+      resize: vertical;
+      height: 80px;
+    }
+    .form-row input[type=text]:focus,
+    .form-row textarea:focus {
+      outline: 1px solid var(--accent2);
+    }
+    .form-hint {
+      font-size: 10px;
+      color: var(--muted);
+      margin-left: 88px;
+      margin-bottom: 8px;
+    }
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+    .sage-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .btn {
+      background: var(--accent2);
+      color: white;
+      border: none;
+      padding: 5px 18px;
+      font-family: 'Courier Prime', monospace;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: #1a3060; }
+    .btn.danger { background: var(--accent); }
+    .btn.danger:hover { background: #5a0000; }
+
+    /* STATUS */
+    #status-msg {
+      text-align: center;
+      padding: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      min-height: 24px;
+    }
+
+    /* THREADS */
+    .thread {
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+    }
+
+    /* OP POST */
+    .op-post {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .op-image {
+      flex-shrink: 0;
+    }
+    .op-image img {
+      max-width: 200px;
+      max-height: 200px;
+      border: 1px solid var(--border);
+      display: block;
+      cursor: pointer;
+    }
+    .op-image img.expanded {
+      max-width: 100%;
+      max-height: none;
+    }
+    .op-content { flex: 1; min-width: 0; }
+
+    .post-header {
+      margin-bottom: 5px;
+      line-height: 1.8;
+    }
+    .post-subject {
+      font-weight: bold;
+      color: var(--accent2);
+      font-size: 14px;
+      margin-right: 6px;
+    }
+    .post-name {
+      color: var(--accent);
+      font-weight: bold;
+      margin-right: 4px;
+    }
+    .post-trip {
+      color: var(--trip);
+      font-weight: bold;
+      margin-right: 6px;
+    }
+    .post-time {
+      color: var(--muted);
+      font-size: 11px;
+      margin-right: 6px;
+    }
+    .post-no {
+      color: var(--muted);
+      font-size: 11px;
+      font-family: 'Courier Prime', monospace;
+    }
+    .post-no a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .post-no a:hover { color: var(--accent2); text-decoration: underline; }
+
+    .post-body {
+      line-height: 1.6;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+    .post-body .greentext { color: var(--green); }
+    .post-body .quotelink { color: var(--accent2); text-decoration: none; }
+    .post-body .quotelink:hover { text-decoration: underline; }
+
+    /* REPLIES */
+    .replies {
+      margin-left: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .reply-post {
+      background: var(--reply-bg);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 8px 10px;
+      display: inline-block;
+      max-width: 100%;
+    }
+    .reply-image img {
+      max-width: 150px;
+      max-height: 150px;
+      border: 1px solid var(--border);
+      margin-top: 5px;
+      cursor: pointer;
+      display: block;
+    }
+    .reply-image img.expanded {
+      max-width: 100%;
+      max-height: none;
+    }
+
+    /* REPLY FORM */
+    .reply-form-wrap {
+      margin-left: 40px;
+      margin-top: 8px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 10px;
+      display: none;
+    }
+    .reply-form-wrap.open { display: block; }
+    .reply-form-wrap h4 {
+      font-family: 'Courier Prime', monospace;
+      font-size: 12px;
+      color: var(--accent2);
+      margin-bottom: 8px;
+    }
+
+    .thread-actions {
+      margin-left: 40px;
+      margin-top: 6px;
+      display: flex;
+      gap: 10px;
+    }
+    .reply-toggle {
+      background: none;
+      border: none;
+      color: var(--accent2);
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 0;
+      text-decoration: underline;
+    }
+    .reply-toggle:hover { color: var(--accent); }
+    .reply-count {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* LOADING */
+    .loading {
+      text-align: center;
+      color: var(--muted);
+      padding: 40px;
+      font-family: 'Courier Prime', monospace;
+    }
+
+    /* EMPTY */
+    .empty-board {
+      text-align: center;
+      color: var(--muted);
+      padding: 40px;
+      font-style: italic;
+    }
+
+    /* CONFIG SCREEN */
+    #config-screen {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 24px;
+      background: var(--op-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+    #config-screen h2 {
+      font-family: 'Courier Prime', monospace;
+      color: var(--accent2);
+      margin-bottom: 16px;
+      font-size: 20px;
+    }
+    #config-screen p {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .config-row {
+      margin-bottom: 12px;
+    }
+    .config-row label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: var(--accent2);
+      font-family: 'Courier Prime', monospace;
+    }
+    .config-row input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      font-family: 'Courier Prime', monospace;
+      font-size: 13px;
+      border-radius: 2px;
+    }
+    .config-boards { margin: 16px 0; }
+    .config-boards h3 {
+      font-family: 'Courier Prime', monospace;
+      font-size: 14px;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+      font-family: 'Courier Prime', monospace;
+    }
+
+    @media (max-width: 600px) {
+      .op-post { flex-direction: column; }
+      .replies { margin-left: 16px; }
+      .reply-form-wrap { margin-left: 16px; }
+      .thread-actions { margin-left: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- CONFIG SCREEN -->
+<div id="config-screen" style="display:none">
+  <h2>⚙ The Code Consortium setup</h2>
+  <p>Enter your JSONBin credentials below. You need one Bin ID per board. Create 3 bins at <a href="https://jsonbin.io" target="_blank">jsonbin.io</a>, each initialized with <code>{"threads":[]}</code>. Then paste your Secret Key and each Bin ID below.</p>
+  <div class="config-row">
+    <label>Secret Key (X-Master-Key)</label>
+    <input type="text" id="cfg-apikey" placeholder="$2a$10$..." />
+  </div>
+  <div class="config-boards">
+    <h3>Board Bin IDs</h3>
+    <div class="config-row">
+      <label>/soy/ — Soyjaks</label>
+      <input type="text" id="cfg-bin-soy" placeholder="Bin ID for /soy/" />
+    </div>
+    <div class="config-row">
+      <label>/cs/ — Computer Science</label>
+      <input type="text" id="cfg-bin-cs" placeholder="Bin ID for /cs/" />
+    </div>
+    <div class="config-row">
+      <label>/hw/ — Homework Help</label>
+      <input type="text" id="cfg-bin-hw" placeholder="Bin ID for /hw/" />
+    </div>
+  </div>
+  <button class="btn" onclick="saveConfig()">Save & Enter</button>
+</div>
+
+<!-- MAIN SITE -->
+<div id="site" style="display:none">
+  <header id="site-header">
+    <h1>The Code Consortium</h1>
+    <div class="tagline">your friendly neighborhood textboard</div>
+    <nav id="board-nav"></nav>
+  </header>
+
+  <div id="main">
+    <div class="board-header">
+      <h2 id="board-title"></h2>
+      <p id="board-desc"></p>
+    </div>
+
+    <!-- NEW THREAD FORM -->
+    <div class="post-form-wrap">
+      <h3>[ New Thread ]</h3>
+      <div class="form-row">
+        <label>Name</label>
+        <input type="text" id="nt-name" placeholder="Anonymous" maxlength="50" />
+      </div>
+      <div class="form-row">
+        <label>Tripcode</label>
+        <input type="text" id="nt-trip" placeholder="Leave blank for none" maxlength="30" />
+      </div>
+      <div class="form-row">
+        <label>Subject</label>
+        <input type="text" id="nt-subject" placeholder="Thread subject" maxlength="100" />
+      </div>
+      <div class="form-row">
+        <label>Image URL</label>
+        <input type="text" id="nt-image" placeholder="https://example.com/image.jpg (optional)" />
+      </div>
+      <div class="form-row">
+        <label>Comment</label>
+        <textarea id="nt-body" placeholder="Write something...&#10;&#10;Start a line with > for greentext&#10;Use >>123 to quote a post"></textarea>
+      </div>
+      <div class="form-hint">Tripcodes are hashed — use a secret phrase only you know.</div>
+      <div class="form-actions">
+        <button class="btn" onclick="submitThread()">Post Thread</button>
+      </div>
+    </div>
+
+    <div id="status-msg"></div>
+    <div id="board-content"><div class="loading">Loading threads...</div></div>
+  </div>
+
+  <footer>The Code Consortium — powered by JSONBin</footer>
+</div>
+
+<script>
+// ─── BOARDS CONFIG ────────────────────────────────────────────────
+const BOARDS = [
+  { tag: 'soy', name: 'Soyjaks',         desc: "Home of the 'jak. Post soyjaks and soyjakposting." },
+  { tag: 'cs',  name: 'Computer Science',desc: 'Programming, algorithms, CS theory, and tech discussion.' },
+  { tag: 'hw',  name: 'Homework Help',   desc: 'Ask for help with assignments. Show your work.' }
+];
+
+let CFG = {
+  apiKey: '$2a$10$JEfnk2SU6Xja4FHgQlpZVO2IUNZYn9hXHClZuwAEyrbVnr4E3B3FO',
+  bins: {
+    soy: '69aa4b23d0ea881f40f3d847',
+    cs:  '69aa4b18d0ea881f40f3d82e',
+    hw:  '69aa4af743b1c97be9b86ce0'
+  }
+};
+let currentBoard = BOARDS[0].tag;
+let boardData = {}; // cache
+
+// ─── CONFIG ───────────────────────────────────────────────────────
+function loadConfig() {
+  const saved = localStorage.getItem('tcc-cfg');
+  if (saved) {
+    CFG = JSON.parse(saved);
+    return true;
+  }
+  return false;
+}
+function saveConfig() {
+  CFG.apiKey = document.getElementById('cfg-apikey').value.trim();
+  CFG.bins = {
+    soy: document.getElementById('cfg-bin-soy').value.trim(),
+    cs:  document.getElementById('cfg-bin-cs').value.trim(),
+    hw:  document.getElementById('cfg-bin-hw').value.trim()
+  };
+  if (!CFG.apiKey || !CFG.bins.soy || !CFG.bins.cs || !CFG.bins.hw) {
+    alert('Please fill in all fields.');
+    return;
+  }
+  localStorage.setItem('tcc-cfg', JSON.stringify(CFG));
+  document.getElementById('config-screen').style.display = 'none';
+  document.getElementById('site').style.display = 'block';
+  initSite();
+}
+function resetConfig() {
+  localStorage.removeItem('tcc-cfg');
+  location.reload();
+}
+
+// ─── TRIPCODE ─────────────────────────────────────────────────────
+async function makeTrip(pass) {
+  if (!pass) return '';
+  const enc = new TextEncoder();
+  const data = enc.encode(pass);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  const b64 = btoa(String.fromCharCode(...new Uint8Array(hash)));
+  return '!' + b64.slice(0, 10);
+}
+
+// ─── JSONBIN API ──────────────────────────────────────────────────
+async function getBoard(tag) {
+  const binId = CFG.bins[tag];
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+    headers: { 'X-Master-Key': CFG.apiKey }
+  });
+  const data = await res.json();
+  return data.record;
+}
+async function putBoard(tag, record) {
+  const binId = CFG.bins[tag];
+  await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': CFG.apiKey },
+    body: JSON.stringify(record)
+  });
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────
+function formatBody(text) {
+  return text.split('\n').map(line => {
+    line = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    if (line.startsWith('&gt;') && !line.startsWith('&gt;&gt;')) {
+      return `<span class="greentext">${line}</span>`;
+    }
+    line = line.replace(/&gt;&gt;(\d+)/g, (_, n) => `<a class="quotelink" href="#p${n}">&gt;&gt;${n}</a>`);
+    return line;
+  }).join('\n');
+}
+
+function timeAgo(ts) {
+  const diff = Math.floor((Date.now() - ts) / 1000);
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+
+function renderPost(post, isOP) {
+  const nameHtml = `<span class="post-name">${post.name || 'Anonymous'}</span>`;
+  const tripHtml = post.trip ? `<span class="post-trip">${post.trip}</span>` : '';
+  const subjectHtml = post.subject ? `<span class="post-subject">${post.subject}</span>` : '';
+  const imgHtml = post.image
+    ? `<div class="${isOP ? 'op-image' : 'reply-image'}">
+         <img src="${post.image}" alt="image" onclick="this.classList.toggle('expanded')" loading="lazy" onerror="this.style.display='none'">
+       </div>`
+    : '';
+  const bodyHtml = `<div class="post-body">${formatBody(post.body || '')}</div>`;
+  const header = `<div class="post-header">
+    ${subjectHtml}${nameHtml}${tripHtml}
+    <span class="post-time">${timeAgo(post.ts)}</span>
+    <span class="post-no">No.<a href="#p${post.id}">${post.id}</a></span>
+  </div>`;
+
+  if (isOP) {
+    return `<div class="op-post" id="p${post.id}">
+      ${imgHtml}
+      <div class="op-content">${header}${bodyHtml}</div>
+    </div>`;
+  } else {
+    return `<div class="reply-post" id="p${post.id}">${header}${imgHtml}${bodyHtml}</div>`;
+  }
+}
+
+function renderBoard(record) {
+  const threads = record.threads || [];
+  if (!threads.length) {
+    return `<div class="empty-board">No threads yet. Be the first to post!</div>`;
+  }
+  return threads.map(t => {
+    const replies = t.replies || [];
+    const replyForms = `
+      <div class="thread-actions">
+        <span class="reply-count">${replies.length} repl${replies.length===1?'y':'ies'}</span>
+        <button class="reply-toggle" onclick="toggleReplyForm('rf-${t.id}')">[ Reply ]</button>
+      </div>
+      <div class="reply-form-wrap" id="rf-${t.id}">
+        <h4>[ Reply to Thread #${t.id} ]</h4>
+        <div class="form-row"><label>Name</label><input type="text" id="rn-${t.id}" placeholder="Anonymous" maxlength="50"/></div>
+        <div class="form-row"><label>Tripcode</label><input type="text" id="rt-${t.id}" placeholder="optional" maxlength="30"/></div>
+        <div class="form-row"><label>Image URL</label><input type="text" id="ri-${t.id}" placeholder="https://... (optional)"/></div>
+        <div class="form-row"><label>Comment</label><textarea id="rb-${t.id}" placeholder="Write your reply..." style="height:60px"></textarea></div>
+        <div class="form-actions">
+          <button class="btn" onclick="submitReply('${t.id}')">Post Reply</button>
+          <label class="sage-label"><input type="checkbox" id="rs-${t.id}"> Sage</label>
+        </div>
+      </div>`;
+    const repliesHtml = replies.length
+      ? `<div class="replies">${replies.map(r => renderPost(r, false)).join('')}</div>`
+      : '';
+    return `<div class="thread" id="t${t.id}">
+      ${renderPost(t, true)}
+      ${repliesHtml}
+      ${replyForms}
+    </div>`;
+  }).join('');
+}
+
+// ─── ACTIONS ──────────────────────────────────────────────────────
+function toggleReplyForm(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function setStatus(msg, err=false) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.style.color = err ? 'var(--accent)' : 'var(--muted)';
+}
+
+async function loadCurrentBoard(silent=false) {
+  if (!silent) setStatus('Loading...');
+  try {
+    const record = await getBoard(currentBoard);
+    boardData[currentBoard] = record;
+    document.getElementById('board-content').innerHTML = renderBoard(record);
+    if (!silent) setStatus('');
+  } catch(e) {
+    setStatus('Failed to load board. Check your credentials.', true);
+  }
+}
+
+async function submitThread() {
+  const name = document.getElementById('nt-name').value.trim();
+  const tripRaw = document.getElementById('nt-trip').value.trim();
+  const subject = document.getElementById('nt-subject').value.trim();
+  const image = document.getElementById('nt-image').value.trim();
+  const body = document.getElementById('nt-body').value.trim();
+
+  if (!body && !image) { setStatus('Please enter a comment or image URL.', true); return; }
+
+  setStatus('Posting...');
+  const trip = await makeTrip(tripRaw);
+  let record;
+  try { record = await getBoard(currentBoard); } catch(e) { setStatus('Error fetching board.', true); return; }
+
+  const id = Date.now();
+  const thread = { id, name: name||'Anonymous', trip, subject, image, body, ts: id, replies: [] };
+  record.threads = record.threads || [];
+  record.threads.unshift(thread);
+  if (record.threads.length > 50) record.threads = record.threads.slice(0, 50);
+
+  try {
+    await putBoard(currentBoard, record);
+    document.getElementById('nt-name').value = '';
+    document.getElementById('nt-trip').value = '';
+    document.getElementById('nt-subject').value = '';
+    document.getElementById('nt-image').value = '';
+    document.getElementById('nt-body').value = '';
+    setStatus('Thread posted!');
+    await loadCurrentBoard(true);
+    setTimeout(() => setStatus(''), 2000);
+  } catch(e) {
+    setStatus('Failed to post thread.', true);
+  }
+}
+
+async function submitReply(threadId) {
+  const name = document.getElementById(`rn-${threadId}`).value.trim();
+  const tripRaw = document.getElementById(`rt-${threadId}`).value.trim();
+  const image = document.getElementById(`ri-${threadId}`).value.trim();
+  const body = document.getElementById(`rb-${threadId}`).value.trim();
+  const sage = document.getElementById(`rs-${threadId}`).checked;
+
+  if (!body && !image) { setStatus('Please enter a comment or image URL.', true); return; }
+
+  setStatus('Posting reply...');
+  const trip = await makeTrip(tripRaw);
+  let record;
+  try { record = await getBoard(currentBoard); } catch(e) { setStatus('Error.', true); return; }
+
+  const idx = record.threads.findIndex(t => String(t.id) === String(threadId));
+  if (idx === -1) { setStatus('Thread not found.', true); return; }
+
+  const id = Date.now();
+  const reply = { id, name: name||'Anonymous', trip, image, body, ts: id };
+  record.threads[idx].replies = record.threads[idx].replies || [];
+  record.threads[idx].replies.push(reply);
+
+  // Bump thread to top unless sage
+  if (!sage) {
+    const thread = record.threads.splice(idx, 1)[0];
+    record.threads.unshift(thread);
+  }
+
+  try {
+    await putBoard(currentBoard, record);
+    setStatus('Reply posted!');
+    await loadCurrentBoard(true);
+    setTimeout(() => setStatus(''), 2000);
+  } catch(e) {
+    setStatus('Failed to post reply.', true);
+  }
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────
+function switchBoard(tag) {
+  currentBoard = tag;
+  const board = BOARDS.find(b => b.tag === tag);
+  document.getElementById('board-title').textContent = `/${tag}/ — ${board.name}`;
+  document.getElementById('board-desc').textContent = board.desc;
+  document.querySelectorAll('.board-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tag === tag);
+  });
+  document.getElementById('board-content').innerHTML = '<div class="loading">Loading threads...</div>';
+  loadCurrentBoard();
+}
+
+function initSite() {
+  const nav = document.getElementById('board-nav');
+  BOARDS.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'board-tab';
+    btn.dataset.tag = b.tag;
+    btn.textContent = `/${b.tag}/`;
+    btn.onclick = () => switchBoard(b.tag);
+    nav.appendChild(btn);
+  });
+  switchBoard(BOARDS[0].tag);
+}
+
+// ─── SECRET KEY COMBO (Ctrl+Shift+R) ─────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+    e.preventDefault();
+    if (confirm('Reset configuration and return to setup screen?')) resetConfig();
+  }
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────
+document.getElementById('site').style.display = 'block';
+initSite();
+</script>
+</body>
+</html>
