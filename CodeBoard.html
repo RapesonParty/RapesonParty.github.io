@@ -778,15 +778,6 @@ function initSite() {
   });
   switchBoard(BOARDS[0].tag);
 }
-
-// ─── SECRET KEY COMBO (Ctrl+Shift+R) ─────────────────────────────
-document.addEventListener('keydown', function(e) {
-  if (e.ctrlKey && e.shiftKey && e.key === 'R') {
-    e.preventDefault();
-    if (confirm('Reset configuration and return to setup screen?')) resetConfig();
-  }
-});
-
 // ─── INIT ─────────────────────────────────────────────────────────
 document.getElementById('site').style.display = 'block';
 initSite();
